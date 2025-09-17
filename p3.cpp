@@ -54,13 +54,73 @@ ListNode* findNode(ListNode* head, int value) {
 // TODO: implementar la conexión de las listas en el nodo con valor intersectVal
 // Si intersectVal no se encuentra, las listas permanecen separadas   
 void connectLists(ListNode* listA, ListNode* listB, int intersectVal) {
-    //TODO: implemente aqui
+    // buscar el nodo con valor intersectVal en la lista A
+    ListNode* nodoA = findNode(listA, intersectVal);
+    
+    // buscar el nodo con valor intersectVal en la lista B  
+    ListNode* nodoB = findNode(listB, intersectVal);
+    
+    // si ambos nodos existen, crear la interseccion
+    if (nodoA && nodoB) {
+        // encontrar el nodo anterior a nodoB en la lista B
+        ListNode* current = listB;
+        ListNode* prev = nullptr;
+        
+        while (current && current != nodoB) {
+            prev = current;
+            current = current->next;
+        }
+        
+        // conectar la parte anterior de B (si existe) con el nodo A
+        if (prev) {
+            prev->next = nodoA;
+        }
+        
+        // copiar la continuacion de nodoB al final de nodoA
+        if (nodoB->next && nodoA) {
+            // encontrar el final de la cadena que comienza en nodoA
+            ListNode* finalA = nodoA;
+            while (finalA->next) {
+                finalA = finalA->next;
+            }
+            
+            // si nodoA no tiene continuacion, usar la de nodoB
+            if (finalA == nodoA && !nodoA->next) {
+                nodoA->next = nodoB->next;
+            }
+        }
+        
+        // si la interseccion es al inicio de B, necesitamos manejo especial
+        // que se hara en la funcion de prueba
+    }
 }
 
 
 // TODO: implementar el algoritmo para encontrar la intersección de dos listas
 ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
-    // TODO: implemente aqui
+    if (!headA || !headB) return nullptr;
+    
+    // crear hash table para almacenar los nodos de la lista A
+    ChainHash<ListNode*, bool> tablaHash(10);
+    
+    // recorrer la lista A y guardar cada nodo en la tabla hash
+    ListNode* current = headA;
+    while (current) {
+        tablaHash.set(current, true); // usamos el puntero como clave
+        current = current->next;
+    }
+    
+    // recorrer la lista B y verificar si algun nodo ya esta en la tabla
+    current = headB;
+    while (current) {
+        if (tablaHash.contains(current)) {
+            // encontramos la interseccion!
+            return current;
+        }
+        current = current->next;
+    }
+    
+    // no hay interseccion
     return nullptr;
 }
 
@@ -73,7 +133,17 @@ void testIntersection(const vector<int>& listA, const vector<int>& listB,
     
     // crear interseccion 
     if (intersectVal != -1) {
-        connectLists(headA, headB, intersectVal);
+        // caso especial: si la interseccion debe ser al inicio de B
+        ListNode* nodoB = findNode(headB, intersectVal);
+        if (nodoB == headB) {
+            // la interseccion es al inicio de B, reemplazar headB con el nodo de A
+            ListNode* nodoA = findNode(headA, intersectVal);
+            if (nodoA) {
+                headB = nodoA; // ahora B apunta al mismo nodo que A
+            }
+        } else {
+            connectLists(headA, headB, intersectVal);
+        }
     }
     
     cout << "Lista A: ";
